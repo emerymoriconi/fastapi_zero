@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from fastapi_zero.schemas import UserPublic
+
 
 def test_root_deve_retornar_ola_mundo(client):
     # act
@@ -32,18 +34,18 @@ def test_read_users(client):
     response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'users': [
-            {
-                'id': 1,
-                'email': 'alice@example.com',
-                'username': 'alice',
-            }
-        ]
-    }
+    assert response.json() == {'users': []}
 
 
-def test_update_user(client):
+def test_read_users_with_users(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
+    response = client.get('/users/')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': [user_schema]}
+
+
+def test_update_user(client, user):
     response = client.put(
         '/users/1',
         json={
@@ -61,12 +63,8 @@ def test_update_user(client):
     }
 
 
-def test_delete_user(client):
+def test_delete_user(client, user):
     response = client.delete('/users/1')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'username': 'bob',
-        'email': 'bob@example.com',
-        'id': 1,
-    }
+    assert response.json() == {'message': 'Usuário deletado com sucesso!'}
